@@ -3,12 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -42,7 +43,6 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
 
     /**
@@ -63,5 +63,73 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * Set the password attribute after hashing it.
+     *
+     * @param string $value 
+     * @return void
+     */
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = Hash::make($value);
+    }
+
+    /**
+     * Define the many-to-many relationship between users and roles.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
+    }
+
+    /**
+     * Check if the user has a specific role by its name.
+     * 
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole($roleName)
+    {
+        return $this->roles()->where('name', $roleName)->exists();
+    }
+
+    /**
+     * Assign multiple roles to the user by role's IDs.
+     *
+     * @param array $roleIds
+     * @return void
+     */
+    public function assignRoles(array $roleIds)
+    {
+        $this->roles()->syncWithoutDetaching($roleIds);
+    }
+
+    /**
+     * Remove a role from the user.
+     * 
+     * @param string $roleName
+     * @return void
+     */
+    public function removeRole(string $roleName)
+    {
+        $role = Role::where('name', $roleName)->firstOrFail();
+        $this->roles()->detach($role->id);
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     * 
+     * @param string $permissionName
+     * @return bool
+     */
+    public function hasPermission(string $permissionName)
+    {
+        return $this->roles()->whereHas('permissions', function ($q) use ($permissionName) {
+            $q->where('name', $permissionName);
+        })->exists();
     }
 }
