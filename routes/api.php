@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\PermissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +16,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+// Permission Routes
+Route::apiResource('permissions', PermissionController::class)->middleware('permission:full_access');
+
+
+// Role Routes
+Route::group(['middleware' => ['permission:full_access']], function () {
+    Route::apiResource('roles', RoleController::class);
+    Route::post('roles/{roleId}/permissions', [RoleController::class, 'assignPermissions']);
 });
+
+
+// User Routes
+Route::apiResource('users', PermissionController::class)->middleware('permission:full_access');
