@@ -77,6 +77,36 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
+     * Relationship to tasks assigned to the user.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function assignedTasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    /**
+     * Relationship to tasks created by the user.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function createdTasks()
+    {
+        return $this->hasMany(Task::class, 'created_by');
+    }
+
+    /**
+     * Get all status updates made by the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function statusUpdates()
+    {
+        return $this->hasMany(TaskStatusUpdate::class);
+    }
+
+    /**
      * Define the many-to-many relationship between users and roles.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -108,16 +138,16 @@ class User extends Authenticatable implements JWTSubject
         $this->roles()->syncWithoutDetaching($roleIds);
     }
 
+    #TODO use it
     /**
      * Remove a role from the user.
      * 
-     * @param string $roleName
+     * @param $roleId
      * @return void
      */
-    public function removeRole(string $roleName)
+    public function removeRole($roleId)
     {
-        $role = Role::where('name', $roleName)->firstOrFail();
-        $this->roles()->detach($role->id);
+        $this->roles()->detach($roleId);
     }
 
     /**
