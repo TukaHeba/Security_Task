@@ -41,18 +41,6 @@ class Role extends Model
     }
 
     /**
-     * Assign a permission or more to a role by permission name.
-     * 
-     * @param array $permissionNames
-     * @return void
-     */
-    public function assignPermission(array $permissionNames)
-    {
-        $permissions = Permission::whereIn('name', $permissionNames)->get();
-        $this->permissions()->syncWithoutDetaching($permissions->pluck('id')->toArray());
-    }
-
-    /**
      * Assign multiple permissions to the role by permission's IDs.
 
      * @param array $permissionIds
@@ -63,26 +51,15 @@ class Role extends Model
         $this->permissions()->syncWithoutDetaching($permissionIds);
     }
 
+    #TODO use it
     /**
      * Revoke a specific permission from a role.
      * 
-     * @param string $permissionName
+     * @param $permissionId
      * @return void
      */
-    public function removePermission($permissionName)
+    public function removePermission($permissionId)
     {
-        $permission = Permission::where('name', $permissionName)->firstOrFail();
-        $this->permissions()->detach($permission->id);
-    }
-
-    /** 
-     * Check if the role has a certain permission.
-     * 
-     * @param string $permissionName
-     * @return bool
-     */
-    public function hasPermission($permissionName)
-    {
-        return $this->permissions()->where('name', $permissionName)->exists();
+        $this->permissions()->detach($permissionId);
     }
 }
