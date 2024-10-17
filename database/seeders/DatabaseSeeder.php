@@ -17,6 +17,10 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             TaskSeeder::class,
+            CommentSeeder::class,
+            AttachmentSeeder::class,
+            TaskStatusUpdateSeeder::class,
+            TaskDependencySeeder::class,
         ]);
     }
 }
