@@ -52,7 +52,7 @@ class TaskSeeder extends Seeder
             'type' => 'bug',
             'status' => 'blocked',
             'priority' => 'high',
-            'due_date' => '2024-10-20',
+            'due_date' => '2020-10-20',
             'assigned_to' => null,
             'created_by' => 2,
         ]);
