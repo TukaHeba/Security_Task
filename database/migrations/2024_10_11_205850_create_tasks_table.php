@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->enum('type', ['bug', 'feature', 'improvement']);
-            $table->enum('status', ['open', 'in_Progress', 'completed', 'blocked']);
+            $table->enum('status', ['open', 'in_progress', 'completed', 'blocked']);
             $table->enum('priority', ['low', 'medium', 'high']);
             $table->date('due_date')->nullable();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
