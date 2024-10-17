@@ -11,21 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('attachments', function (Blueprint $table) {
+        Schema::create('error_log', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->string('type');
-            $table->string('path');
-            $table->string('mime_type'); 
-            $table->morphs('attachable');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->text('message')->nullable();
+            $table->string('code')->nullable();
+            $table->string('url');
+            $table->string('method');
+            $table->string('file')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             // Indexes
             $table->index(['type']);
-            $table->index(['user_id']);
-            $table->index(['attachable_id']);
         });
     }
 
@@ -34,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('attachments');
+        Schema::dropIfExists('error_logs');
     }
 };
