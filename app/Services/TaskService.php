@@ -251,8 +251,7 @@ class TaskService
     /**
      * Add an attachment to a task.
      * 
-     * Store the file in the attachments directory
-     * Save the attachment to the database
+     * handle file upload and storage by AttachmentService, then associate the attachment with the task
      * 
      * @param string $taskId
      * @param mixed $file
@@ -264,13 +263,10 @@ class TaskService
         try {
             $task = Task::findOrFail($taskId);
 
-            $path = $file->store('public/attachments');
+            $attachmentService = new AttachmentService();
+            $attachment = $attachmentService->storeAttachment($file);
 
-            $attachment = $task->attachments()->create([
-                'path' => $path,
-                'user_id' => auth()->id(),
-                'type' => $file->getClientOriginalExtension(),
-            ]);
+            $task->attachments()->save($attachment);
 
             return $attachment;
         } catch (ModelNotFoundException $e) {
