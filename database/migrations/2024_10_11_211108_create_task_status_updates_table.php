@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('previous_status', ['open', 'in_Progress', 'completed', 'blocked'])->nullable();
             $table->enum('new_status', ['open', 'in_Progress', 'completed', 'blocked']);
             $table->timestamps();
+            $table->softDeletes();
 
             // Indexes
             $table->index(['task_id', 'user_id']);
