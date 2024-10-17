@@ -61,7 +61,7 @@ Route::middleware(['throttle:60,1', 'security'])->group(function () {
     Route::controller(TaskController::class)->group(function () {
         // CRUD
         Route::apiResource('tasks', TaskController::class)->middleware('permission:task');
-        // sOFT-dELETE
+        // Soft-Delete
         Route::get('/tasks/deleted', [TaskController::class, 'listDeletedTasks'])->middleware('permission:task');
         Route::post('/tasks/{id}/restore', [TaskController::class, 'restoreTask'])->middleware('permission:task');
         Route::delete('/tasks/{id}/force-delete', [TaskController::class, 'forceDeleteTask'])->middleware('permission:task');
