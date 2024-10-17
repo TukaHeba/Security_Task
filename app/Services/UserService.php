@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserService
@@ -17,7 +18,9 @@ class UserService
     public function listAllUsers()
     {
         try {
-            $users = User::with('roles.permissions')->paginate(5);
+            $users = Cache::remember('users', 3600, function () {
+                return User::with('roles.permissions')->paginate(5);
+            });
 
             return $users;
         } catch (\Exception $e) {
@@ -40,6 +43,7 @@ class UserService
             $user->assignRoles($roleIds);
             $user->load('roles.permissions');
 
+            Cache::forget('users');
             return $user;
         } catch (\Exception $e) {
             Log::error('User creation failed: ' . $e->getMessage());
