@@ -83,7 +83,7 @@ class LoginRequest extends FormRequest
     {
         $errors = $validator->errors()->all();
         throw new HttpResponseException(
-            ApiResponseService::error($errors, 'A server error has occurred', 500)
+            ApiResponseService::error($errors, 'A server error has occurred', 403)
         );
     }
 

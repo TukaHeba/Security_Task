@@ -38,10 +38,10 @@ class AuthController extends Controller
         $response = $this->authService->login($credentials);
 
         if ($response['status'] === 'error') {
-            ApiResponseService::error($response['message'], $response['status'], $response['code']);
+            $this->error($response['message'], $response['status'], $response['code']);
         }
 
-        return ApiResponseService::success([
+        return $this->success([
             'user' => $response['user'],
             'authorisation' => [
                 'token' => $response['token'],
@@ -59,7 +59,7 @@ class AuthController extends Controller
     // {
     //     $data = $request->validated();
     //     $response = $this->authService->register($data);
-    //     return ApiResponseService::success([
+    //     return $this->success([
     //         'user' => $response['user'],
     //         'authorisation' => [
     //             'token' => $response['token'],
@@ -77,7 +77,7 @@ class AuthController extends Controller
     {
         $response = $this->authService->logout();
 
-        return ApiResponseService::success(null, $response['message'], $response['code']);
+        return $this->success(null, $response['message'], $response['code']);
     }
 
     /**
@@ -87,7 +87,7 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return ApiResponseService::success([
+        return $this->success([
             'user' => Auth::user(),
             'authorisation' => [
                 'token' => Auth::refresh(),
