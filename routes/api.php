@@ -58,30 +58,26 @@ Route::middleware(['throttle:60,1', 'security'])->group(function () {
     });
 
     // Task Routes
-    Route::controller(TaskController::class)->group(function () {
-        // CRUD
-        Route::middleware('auth:api')->group(function () {
-            Route::get('tasks', [TaskController::class, 'index']);
-            Route::post('tasks', [TaskController::class, 'store'])->middleware('permission:task');
-            Route::get('tasks/{id}', [TaskController::class, 'show']);
-            Route::put('tasks/{id}', [TaskController::class, 'update'])->middleware('permission:task');
-            Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->middleware('permission:task');
-        });
+    // 1- CRUD
+    Route::get('tasks', [TaskController::class, 'index'])->middleware('auth:api');
+    Route::post('tasks', [TaskController::class, 'store'])->middleware('permission:task');
+    Route::get('tasks/{id}', [TaskController::class, 'show'])->middleware('auth:api');
+    Route::put('tasks/{id}', [TaskController::class, 'update'])->middleware('permission:task');
+    Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->middleware('permission:task');
 
-        // Soft-Delete
-        Route::get('/tasks/deleted', [TaskController::class, 'listDeletedTasks'])->middleware('permission:task');
-        Route::post('/tasks/{id}/restore', [TaskController::class, 'restoreTask'])->middleware('permission:task');
-        Route::delete('/tasks/{id}/force-delete', [TaskController::class, 'forceDeleteTask'])->middleware('permission:task');
+    // 2-  Soft-Delete
+    Route::get('/tasks/deleted', [TaskController::class, 'listDeletedTasks'])->middleware('permission:task');
+    Route::post('/tasks/{id}/restore', [TaskController::class, 'restoreTask'])->middleware('permission:task');
+    Route::delete('/tasks/{id}/force-delete', [TaskController::class, 'forceDeleteTask'])->middleware('permission:task');
 
-        // Other Operations
-        Route::post('/tasks/{id}/assign', [TaskController::class, 'assignTask'])->middleware('permission:status');
-        Route::put('/tasks/{id}/reassign', [TaskController::class, 'reassignTask'])->middleware('permission:status');
-        Route::put('/tasks/{id}/status', [TaskController::class, 'updateTaskStatus'])->middleware('permission:full_access');
-        Route::get('/tasks/blocked-late', [TaskController::class, 'blockedAndLateTasks'])->middleware('permission:task');
-        Route::post('/tasks/{id}/comment', [TaskController::class, 'addComment'])->middleware('permission:comment');
-        Route::post('/tasks/{id}/attachment', [TaskController::class, 'addAttachment'])->middleware('permission:attachment');
-    });
-
-    // Report Route
-    Route::get('/reports/daily-tasks', [ReportController::class, 'generateDailyTaskReport'])->middleware('permission:full_access');
+    // 3- Other Operations
+    Route::post('/tasks/{id}/assign', [TaskController::class, 'assignTask'])->middleware('permission:status');
+    Route::put('/tasks/{id}/reassign', [TaskController::class, 'reassignTask'])->middleware('permission:status');
+    Route::put('/tasks/{id}/status', [TaskController::class, 'updateTaskStatus'])->middleware('permission:full_access');
+    Route::get('/tasks/blocked-late', [TaskController::class, 'blockedAndLateTasks'])->middleware('permission:task');
+    Route::post('/tasks/{id}/comment', [TaskController::class, 'addComment'])->middleware('permission:comment');
+    Route::post('/tasks/{id}/attachment', [TaskController::class, 'addAttachment'])->middleware('permission:attachment');
 });
+
+// Report Route
+Route::get('/reports/daily-tasks', [ReportController::class, 'generateDailyTaskReport'])->middleware('permission:full_access');
