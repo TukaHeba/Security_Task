@@ -3,11 +3,12 @@
 namespace App\Jobs;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
-use App\Models\TaskStatusUpdate;
+use App\Mail\DailyTaskReportMail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,42 +18,35 @@ class GenerateDailyTaskReport implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * Create a new job instance.
-     *
-     * @param int $taskId
-     * @return void
-     */
-    public function __construct($taskId)
-    {
-        //
-    }
-
-    /**
      * Execute the job.
      *
-     * Fetch all status updates for today and prepare the data
-     * Then log or save the report
+     * Fetch tasks with status updates in the last 24 hours
+     * Send an email to each user with their tasks
+     * 
      * @return void
      */
     public function handle()
     {
-        $todayUpdates = TaskStatusUpdate::whereDate('created_at', now())->get();
+        try {
+            Log::info('GenerateDailyTaskReport job started.');
 
-        $reportData = [
-            'date' => now()->toDateString(),
-            'total_updates' => $todayUpdates->count(),
-            'updates' => $todayUpdates->map(function ($update) {
-                return [
-                    'task_id' => $update->task_id,
-                    'previous_status' => $update->previous_status,
-                    'new_status' => $update->new_status,
-                    'changed_by' => $update->user_id,
-                    'changed_at' => $update->created_at->toDateTimeString(),
-                ];
-            }),
-        ];
+            $tasks = Task::whereHas('statusUpdates', function ($query) {
+                $query->where('created_at', '>=', now()->subDay());
+            })->with(['statusUpdates', 'assignedTo'])->get();
 
-        Log::info('Daily Task Status Report', $reportData);
-        Storage::put('reports/daily_task_status_report_' . now()->toDateString() . '.json', json_encode($reportData));
+            // Group tasks by assigned user
+            $userTasks = $tasks->groupBy('assigned_to');
+
+            foreach ($userTasks as $userId => $tasks) {
+                $user = User::find($userId);
+                if ($user) {
+                    Mail::to($user->email)->send(new DailyTaskReportMail($user, $tasks));
+                }
+            }
+
+            Log::info('GenerateDailyTaskReport job completed.');
+        } catch (\Exception $e) {
+            Log::error('Error in GenerateDailyTaskReport job: ' . $e->getMessage());
+        }
     }
 }
